@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>Star Wars Database</title>
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+		<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-+0n0xVW2eSR5OomGNYDnhzAbDsOXxcvSN1TPprVMTNDbiYZCxYbOOl7+AMvyTG2x" crossorigin="anonymous">
+	</head>
+	
+	<body>
+		
+		<div class="container">
+			<div class="row" style="margin-top: 1%;">
+				<div class="col-10">
+					<h1 class="display-1">STAR WARS DATABASE</h1>
+				</div>
+				<div class="col-2 col align-self-center">
+					<select id="selectMenu" class="form-select" onchange="actualizarDatos(1);">
+						<option selected hidden disabled>Select data:</option>
+						<option value="people">Characters</option>
+						<option value="films">Films</option>
+					</select>
+				</div>
+			</div>
+			
+			<table id="tablaDatos" class="table table-bordered table-striped table-hover table-dark text-center" width="100%" style="display: none;"></table>
+			
+			<nav id="nav" style="display: none;">
+				<ul id="listaNav" class="pagination pagination-lg justify-content-center navegacion">
+					<li class="page-item active" value="1"><a class="page-link" href="#fijo">1</a></li>
+					<li class="page-item" value="2"><a class="page-link" href="#fijo">2</a></li>
+					<li class="page-item" value="3"><a class="page-link" href="#fijo">3</a></li>
+					<li class="page-item" value="4"><a class="page-link" href="#fijo">4</a></li>
+					<li class="page-item" value="5"><a class="page-link" href="#fijo">5</a></li>
+					<li class="page-item" value="6"><a class="page-link" href="#fijo">6</a></li>
+					<li class="page-item" value="7"><a class="page-link" href="#fijo">7</a></li>
+					<li class="page-item" value="8"><a class="page-link" href="#fijo">8</a></li>
+					<li class="page-item" value="9"><a class="page-link" href="#fijo">9</a></li>
+				</ul>
+			</nav>
+			
+			<div id="bienvenida">
+				<div class="row">
+					<div class="col-2"></div>
+					<div class="col-8">
+						<img src="https://logos-marcas.com/wp-content/uploads/2020/11/Star-Wars-Logo.png" width="100%" alt="IMAGE FROM STAR WARS" />
+					</div>
+					<div class="col-2"></div>
+				</div>
+				
+				<div class="row">
+					<div class="col-1"></div>
+					<div class="col-10">
+						<p class="text-center"><b>All the Star Wars (prequel and original trilogy) data you've ever wanted: Planets, Spaceships, Vehicles, People, Films and Species.</b></p>
+					</div>
+					<div class="col-1"></div>
+				</div>
+			</div>
+		</div>
+		
+		<script>
+		
+			const urlBase = "https://swapi.dev/api/";
+			var selectMenu = document.getElementById("selectMenu");
+			
+			function actualizarDatos (paginaActual) {
+				
+				var urlVar = selectMenu.value + "/";
+				
+				if (paginaActual != 1)
+				{
+					urlVar = urlVar + "?page=" + paginaActual;
+				}
+				
+				var urlFinal = urlBase + urlVar;
+				
+				peticionDatos(urlFinal, paginaActual);
+			}
+			
+			function peticionDatos (url, pagina) {
+			
+				$.ajax({
+					url: url,
+					type: "GET",
+					dataType : "json",
+				})
+				
+				.done(function( json ) {
+					cambiarDatos(json, pagina);
+				})
+			
+			}
+			
+			function cambiarDatos (datos, pagina) {
+			
+				var tabla = document.getElementById("tablaDatos");
+				var html = "<tr>";
+				var htmlFinal;
+				
+				if (selectMenu.value == "films")
+				{
+					htmlFinal = bucleTablaPelis(datos, html);
+					document.getElementById("nav").style = "display: none;";
+				}
+				else
+				{
+					htmlFinal = bucleTablaPersonajes(datos, html, pagina);
+					document.getElementById("nav").style = "display: block;";
+				}
+				
+				tabla.innerHTML = htmlFinal;
+				document.getElementById("bienvenida").style = "display: none;";
+				document.getElementById("tablaDatos").style = "display: table; margin-top: 1%;";
+				
+				var activoAntes = document.getElementsByClassName("active")[0];
+				activoAntes.classList.remove("active");
+				
+				var activoAhora = document.getElementById("listaNav");
+				activoAhora.children[pagina - 1].classList.add("active");
+			}
+			
+			function abrirVentana (total, pagina, elemento) {
+				
+				var tipo, url = "./detalle.html";
+				
+				if (total == 6)
+				{
+					tipo = "films";
+					url = url + "?";
+				}
+				else
+				{
+					tipo = "people";
+					url = url + "?pagina=" + pagina;
+				}
+				
+				url = url + "&tipo=" + tipo + "&elemento=" + elemento;
+				var win = window.open(url, '_blank');
+				win.focus();
+				
+			}
+			
+			function bucleTablaPersonajes (info, texto, pagina) {
+			
+				texto = texto + "<th>Characters</th><th>Name</th><th>Gender</th><th>Hair colour</th><th>Number of films</th><th>More details</th></tr>";
+				
+				for (var i = 0; i < info.results.length; i++)
+				{
+					texto = texto + "<tr><td># " + ((pagina * 10) - (9 - i)) + "</td>";
+					texto = texto + "<td>" + info.results[i].name + "</td>";
+					texto = texto + "<td>" + info.results[i].gender + "</td>";
+					texto = texto + "<td>" + info.results[i].hair_color + "</td>";
+					texto = texto + "<td>" + info.results[i].films.length + "</td>";
+					texto = texto + "<td><button type='button' class='btn btn-outline-info' onclick='abrirVentana(" + info.results.length + ", " + pagina + ", " + (i + 1) + ");'>About this character</button></td></tr>";
+				}
+				
+				return texto;
+			
+			}
+			
+			function bucleTablaPelis (info, texto) {
+			
+				texto = texto + "<th>Films</th><th>Title</th><th>Director</th><th>Date of release</th><th>Number of characters</th><th>Number of planets</th><th>Number of species</th><th>More details</th></tr>";
+				
+				for (var i = 0; i < info.results.length; i++)
+				{
+					texto = texto + "<tr><td># " + (i + 1) + "</td>";
+					texto = texto + "<td>" + info.results[i].title + "</td>";
+					texto = texto + "<td>" + info.results[i].director + "</td>";
+					texto = texto + "<td>" + info.results[i].release_date + "</td>";
+					texto = texto + "<td>" + info.results[i].characters.length + "</td>";
+					texto = texto + "<td>" + info.results[i].planets.length + "</td>";
+					texto = texto + "<td>" + info.results[i].species.length + "</td>";
+					texto = texto + "<td><button type='button' class='btn btn-outline-info' onclick='abrirVentana(" + info.results.length + ", 1, " + (i + 1) + ");'>About this film</button></td></tr>";
+				}
+				
+				return texto;
+			
+			}
+			
+			$(document).ready(function() {
+				$('ul.navegacion li').click(function(e) {
+					actualizarDatos(this.value);
+				});
+			});
+			
+		</script>
+		
+	</body>
+</html>
