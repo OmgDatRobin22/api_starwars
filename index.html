@@ -142,16 +142,23 @@
 			
 			function bucleTablaPersonajes (info, texto, pagina) {
 			
+				var añadir1 = 0;
+				
 				texto = texto + "<th>Characters</th><th>Name</th><th>Gender</th><th>Hair colour</th><th>Number of films</th><th>More details</th></tr>";
 				
 				for (var i = 0; i < info.results.length; i++)
 				{
+					if ((pagina == 2 && i >= 6) || pagina > 2)
+					{
+						añadir1 = 1;
+					}
+					
 					texto = texto + "<tr><td># " + ((pagina * 10) - (9 - i)) + "</td>";
 					texto = texto + "<td>" + info.results[i].name + "</td>";
 					texto = texto + "<td>" + info.results[i].gender + "</td>";
 					texto = texto + "<td>" + info.results[i].hair_color + "</td>";
 					texto = texto + "<td>" + info.results[i].films.length + "</td>";
-					texto = texto + "<td><button type='button' class='btn btn-outline-info' onclick='abrirVentana(" + info.results.length + ", " + pagina + ", " + (i + 1) + ");'>About this character</button></td></tr>";
+					texto = texto + "<td><button type='button' class='btn btn-outline-info' onclick='abrirVentana(" + info.results.length + ", " + pagina + ", " + ((i + 1) + añadir1) + ");'>About this character</button></td></tr>";
 				}
 				
 				return texto;
